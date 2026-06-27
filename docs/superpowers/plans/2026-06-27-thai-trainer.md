@@ -6,12 +6,13 @@
 
 **Architecture:** A React + TypeScript single-page PWA with no backend. Pure, framework-free core modules (SRS scheduler, stage rules, grading, session builder) hold all logic and are unit-tested in isolation. A thin IndexedDB data layer (via `idb`) persists cards, review state, and progress on-device, with JSON export/import as a manual cross-device bridge. React components render the study loop and consume the core through a single hook.
 
-**Tech Stack:** React 18, TypeScript, Vite, Vitest + @testing-library/react + jsdom, `idb`, `fake-indexeddb` (tests), `vite-plugin-pwa`, browser Web Speech API for TTS.
+**Tech Stack:** Bun (runtime + package manager), React 19, TypeScript 6, Vite 8, Vitest 4 + @testing-library/react + jsdom, `idb`, `fake-indexeddb` (tests), `vite-plugin-pwa`, browser Web Speech API for TTS. Exact versions are pinned in Task 1's `package.json` (latest stable as of 2026-06-27).
 
 ## Global Constraints
 
 - **No backend / no network calls for app data.** All persistence is local (IndexedDB). TTS uses the in-browser Web Speech API only.
-- **Node.js 20+ and npm required** to build/run. (Not currently installed on the dev machine — install before Task 1.)
+- **Bun 1.3+ required** to build/run (installed: 1.3.14). Bun is the runtime AND package manager. Run `bun upgrade` first to be current.
+- **Use `bun run test` or `bunx vitest`, never `bun test`.** `bun test` invokes Bun's own test runner and ignores the `test` script; this project's tests run on Vitest. Per-task commands below use `bunx vitest run <file>`.
 - **Core modules under `src/core/` must not import React, the DOM, or `idb`.** They are pure TypeScript: inputs in, values out. This keeps them unit-testable and portable to a future mobile wrapper.
 - **All time is passed in explicitly** as `now: number` (epoch ms) to scheduling/session functions — never call `Date.now()` inside core modules, so tests are deterministic.
 - **Tunable constants live in `src/core/config.ts`** and are imported where needed — no magic numbers scattered in logic.
@@ -66,7 +67,7 @@ thai-trainer/
 
 - [ ] **Step 1: Initialize package.json**
 
-Create `package.json`:
+Create `package.json` (versions are latest stable as of 2026-06-27):
 
 ```json
 {
@@ -76,32 +77,36 @@ Create `package.json`:
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
-    "idb": "^8.0.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "idb": "^8.0.3",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.4.0",
-    "@testing-library/react": "^16.0.0",
-    "@testing-library/user-event": "^14.5.0",
-    "@types/react": "^18.3.0",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.0",
-    "fake-indexeddb": "^6.0.0",
-    "jsdom": "^25.0.0",
-    "typescript": "^5.5.0",
-    "vite": "^5.4.0",
-    "vite-plugin-pwa": "^0.20.0",
-    "vitest": "^2.1.0"
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^26.0.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "fake-indexeddb": "^6.2.5",
+    "jsdom": "^29.1.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.0",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^4.1.9"
   }
 }
 ```
+
+Note: `tsc --noEmit` (not `tsc -b`) — the project uses a single non-composite `tsconfig.json`, so `-b` would error. Vite handles the actual build; `tsc` is the type-check gate.
 
 - [ ] **Step 2: Add tsconfig.json**
 
@@ -129,10 +134,10 @@ Create `tsconfig.json`:
 
 - [ ] **Step 3: Add vite.config.ts and index.html**
 
-Create `vite.config.ts` (PWA plugin added in Task 16; minimal for now):
+Create `vite.config.ts` (PWA plugin added in Task 16; minimal for now). Import `defineConfig` from `vitest/config` so the `test` key is typed:
 
 ```ts
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
@@ -208,8 +213,8 @@ describe("test harness", () => {
 
 - [ ] **Step 6: Install and run tests**
 
-Run: `npm install && npm test`
-Expected: Vitest reports 1 passing test.
+Run: `bun install && bun run test`
+Expected: Vitest reports 1 passing test. (Use `bun run test`, not `bun test`.)
 
 - [ ] **Step 7: Commit**
 
@@ -259,7 +264,7 @@ describe("config", () => {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `npx vitest run src/core/config.test.ts`
+Run: `bunx vitest run src/core/config.test.ts`
 Expected: FAIL — cannot find module `./config`.
 
 - [ ] **Step 3: Write types.ts and config.ts**
@@ -316,7 +321,7 @@ export const config = {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `npx vitest run src/core/config.test.ts`
+Run: `bunx vitest run src/core/config.test.ts`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -430,7 +435,7 @@ describe("scheduleReview", () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `npx vitest run src/core/srs.test.ts`
+Run: `bunx vitest run src/core/srs.test.ts`
 Expected: FAIL — cannot find module `./srs`.
 
 - [ ] **Step 3: Implement srs.ts**
@@ -486,7 +491,7 @@ export function scheduleReview(state: ReviewState, grade: Grade, now: number): R
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `npx vitest run src/core/srs.test.ts`
+Run: `bunx vitest run src/core/srs.test.ts`
 Expected: PASS (all cases).
 
 - [ ] **Step 5: Commit**
@@ -543,7 +548,7 @@ describe("gradeTypedAnswer", () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `npx vitest run src/core/grading.test.ts`
+Run: `bunx vitest run src/core/grading.test.ts`
 Expected: FAIL — cannot find module `./grading`.
 
 - [ ] **Step 3: Implement grading.ts**
@@ -565,7 +570,7 @@ export function gradeTypedAnswer(expected: string, actual: string): boolean {
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `npx vitest run src/core/grading.test.ts`
+Run: `bunx vitest run src/core/grading.test.ts`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -659,7 +664,7 @@ describe("stageConfig", () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `npx vitest run src/core/stages.test.ts`
+Run: `bunx vitest run src/core/stages.test.ts`
 Expected: FAIL — cannot find module `./stages`.
 
 - [ ] **Step 3: Implement stages.ts**
@@ -717,7 +722,7 @@ export function stageConfig(stage: Stage): {
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `npx vitest run src/core/stages.test.ts`
+Run: `bunx vitest run src/core/stages.test.ts`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -801,7 +806,7 @@ describe("pickExercise", () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `npx vitest run src/core/session.test.ts`
+Run: `bunx vitest run src/core/session.test.ts`
 Expected: FAIL — cannot find module `./session`.
 
 - [ ] **Step 3: Implement session.ts**
@@ -839,7 +844,7 @@ export function pickExercise(
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `npx vitest run src/core/session.test.ts`
+Run: `bunx vitest run src/core/session.test.ts`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -895,7 +900,7 @@ describe("starterDeck", () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `npx vitest run src/data/starterDeck.test.ts`
+Run: `bunx vitest run src/data/starterDeck.test.ts`
 Expected: FAIL — cannot find module `./starterDeck`.
 
 - [ ] **Step 3: Implement starterDeck.ts**
@@ -948,7 +953,7 @@ export const starterDeck: Card[] = [
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `npx vitest run src/data/starterDeck.test.ts`
+Run: `bunx vitest run src/data/starterDeck.test.ts`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -1039,7 +1044,7 @@ describe("db", () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `npx vitest run src/data/db.test.ts`
+Run: `bunx vitest run src/data/db.test.ts`
 Expected: FAIL — cannot find module `./db`.
 
 - [ ] **Step 3: Implement db.ts**
@@ -1145,7 +1150,7 @@ beforeEach(() => {
 
 - [ ] **Step 5: Run tests to verify they pass**
 
-Run: `npx vitest run src/data/db.test.ts`
+Run: `bunx vitest run src/data/db.test.ts`
 Expected: PASS.
 
 - [ ] **Step 6: Commit**
@@ -1223,7 +1228,7 @@ describe("exportAll/importAll", () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `npx vitest run src/data/exportImport.test.ts`
+Run: `bunx vitest run src/data/exportImport.test.ts`
 Expected: FAIL — cannot find module `./exportImport`.
 
 - [ ] **Step 3: Implement exportImport.ts**
@@ -1292,7 +1297,7 @@ export async function importAll(json: string): Promise<void> {
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `npx vitest run src/data/exportImport.test.ts`
+Run: `bunx vitest run src/data/exportImport.test.ts`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -1364,7 +1369,7 @@ describe("tts", () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `npx vitest run src/tts/speak.test.ts`
+Run: `bunx vitest run src/tts/speak.test.ts`
 Expected: FAIL — cannot find module `./speak`.
 
 - [ ] **Step 3: Implement speak.ts**
@@ -1389,7 +1394,7 @@ export function speakThai(text: string): void {
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `npx vitest run src/tts/speak.test.ts`
+Run: `bunx vitest run src/tts/speak.test.ts`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -1457,7 +1462,7 @@ describe("useStudySession", () => {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `npx vitest run src/ui/useStudySession.test.ts`
+Run: `bunx vitest run src/ui/useStudySession.test.ts`
 Expected: FAIL — cannot find module `./useStudySession`.
 
 - [ ] **Step 3: Implement useStudySession.ts**
@@ -1570,7 +1575,7 @@ export function useStudySession() {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `npx vitest run src/ui/useStudySession.test.ts`
+Run: `bunx vitest run src/ui/useStudySession.test.ts`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -1654,7 +1659,7 @@ describe("MeaningRecall", () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `npx vitest run src/ui/exercises`
+Run: `bunx vitest run src/ui/exercises`
 Expected: FAIL — cannot find the exercise modules.
 
 - [ ] **Step 3: Implement the four exercise components**
@@ -1832,7 +1837,7 @@ export function Spelling({
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `npx vitest run src/ui/exercises`
+Run: `bunx vitest run src/ui/exercises`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -1892,7 +1897,7 @@ describe("StudySession", () => {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `npx vitest run src/ui/StudySession.test.tsx`
+Run: `bunx vitest run src/ui/StudySession.test.tsx`
 Expected: FAIL — cannot find module `./StudySession`.
 
 - [ ] **Step 3: Implement StudySession.tsx**
@@ -1938,7 +1943,7 @@ export function StudySession() {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `npx vitest run src/ui/StudySession.test.tsx`
+Run: `bunx vitest run src/ui/StudySession.test.tsx`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -2002,7 +2007,7 @@ describe("AddCardForm", () => {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `npx vitest run src/ui/AddCardForm.test.tsx`
+Run: `bunx vitest run src/ui/AddCardForm.test.tsx`
 Expected: FAIL — cannot find module `./AddCardForm`.
 
 - [ ] **Step 3: Implement AddCardForm.tsx**
@@ -2010,7 +2015,7 @@ Expected: FAIL — cannot find module `./AddCardForm`.
 Create `src/ui/AddCardForm.tsx`:
 
 ```tsx
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import type { Card, Stage } from "../core/types";
 import { putCard } from "../data/db";
 
@@ -2022,7 +2027,7 @@ export function AddCardForm({ onAdded }: { onAdded?: () => void }) {
   const [tier, setTier] = useState<Stage>(1);
   const [error, setError] = useState("");
 
-  async function submit(e: React.FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
     if (!thai.trim() || !romanization.trim() || !english.trim()) {
       setError("Fill in Thai, romanization, and English.");
@@ -2071,7 +2076,7 @@ Note: the `<label>text<input/></label>` association makes `getByLabelText(/thai/
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `npx vitest run src/ui/AddCardForm.test.tsx`
+Run: `bunx vitest run src/ui/AddCardForm.test.tsx`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -2126,7 +2131,7 @@ describe("ProgressView", () => {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `npx vitest run src/ui/ProgressView.test.tsx`
+Run: `bunx vitest run src/ui/ProgressView.test.tsx`
 Expected: FAIL — cannot find module `./ProgressView`.
 
 - [ ] **Step 3: Implement ProgressView.tsx**
@@ -2134,7 +2139,7 @@ Expected: FAIL — cannot find module `./ProgressView`.
 Create `src/ui/ProgressView.tsx`:
 
 ```tsx
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { getProgress } from "../data/db";
 import { exportAll, importAll } from "../data/exportImport";
 import type { UserProgress } from "../core/types";
@@ -2158,7 +2163,7 @@ export function ProgressView() {
     URL.revokeObjectURL(url);
   }
 
-  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleImport(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
@@ -2191,7 +2196,7 @@ export function ProgressView() {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `npx vitest run src/ui/ProgressView.test.tsx`
+Run: `bunx vitest run src/ui/ProgressView.test.tsx`
 Expected: PASS.
 
 - [ ] **Step 5: Wire up App.tsx**
@@ -2226,10 +2231,10 @@ export default function App() {
 
 - [ ] **Step 6: Run the full test suite + dev smoke check**
 
-Run: `npm test`
+Run: `bun run test`
 Expected: all tests pass.
 
-Run: `npm run dev` and open the printed URL. Expected: app loads, "Study" shows a card, "Add card" and "Progress" tabs render. Stop the dev server when done.
+Run: `bun run dev` and open the printed URL. Expected: app loads, "Study" shows a card, "Add card" and "Progress" tabs render. Stop the dev server when done.
 
 - [ ] **Step 7: Commit**
 
@@ -2264,10 +2269,10 @@ If ImageMagick is unavailable, copy any two PNG files to those paths/names — t
 
 - [ ] **Step 2: Configure vite-plugin-pwa**
 
-Replace `vite.config.ts` with:
+Replace `vite.config.ts` with (still importing `defineConfig` from `vitest/config` to keep the `test` key typed):
 
 ```ts
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
@@ -2301,12 +2306,12 @@ export default defineConfig({
 
 - [ ] **Step 3: Build to verify PWA artifacts generate**
 
-Run: `npm run build`
+Run: `bun run build`
 Expected: build succeeds and `dist/` contains `manifest.webmanifest` and a generated service worker (`sw.js`).
 
 - [ ] **Step 4: Verify tests still pass**
 
-Run: `npm test`
+Run: `bun run test`
 Expected: all tests pass (PWA plugin does not affect Vitest).
 
 - [ ] **Step 5: Commit**
