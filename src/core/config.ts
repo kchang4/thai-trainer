@@ -1,0 +1,8 @@
+export const config = {
+  INITIAL_EASE: 2.5,
+  MIN_EASE: 1.3,
+  MASTERY_MIN_REPS: 2,
+  MASTERY_MIN_INTERVAL_DAYS: 7,
+  STAGE_ADVANCE_THRESHOLD: 8,
+  DAY_MS: 86_400_000,
+} as const;
