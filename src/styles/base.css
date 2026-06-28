@@ -1,4 +1,5 @@
 @import "tailwindcss";
+/* Themes: to add one, create src/styles/themes/<id>.css, @import it below, and add an entry to src/ui/theme/themes.ts. */
 @import "./themes/temple.css";
 
 /* Map themeable tokens to Tailwind utilities. `inline` keeps the var

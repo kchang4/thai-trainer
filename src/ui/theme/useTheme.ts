@@ -5,7 +5,11 @@ export const THEME_STORAGE_KEY = "thai-trainer-theme";
 
 export function getStoredTheme(): string {
   try {
-    return localStorage.getItem(THEME_STORAGE_KEY) ?? DEFAULT_THEME_ID;
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored !== null && themes.some((t) => t.id === stored)) {
+      return stored;
+    }
+    return DEFAULT_THEME_ID;
   } catch {
     return DEFAULT_THEME_ID;
   }

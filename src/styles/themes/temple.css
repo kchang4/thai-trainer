@@ -1,4 +1,4 @@
-[data-theme="temple"] {
+:root, [data-theme="temple"] {
   --app-primary: #e0a82e;
   --app-on-primary: #3b2a14;
   --app-secondary: #b23a48;
