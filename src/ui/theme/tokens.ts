@@ -19,6 +19,7 @@ export const REQUIRED_TOKENS = [
   "--app-radius-sm",
   "--app-radius-md",
   "--app-radius-lg",
+  "--app-radius-full",
   "--app-shadow-sm",
   "--app-shadow-md",
   "--app-shadow-button",

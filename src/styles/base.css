@@ -24,6 +24,7 @@
   --radius-sm: var(--app-radius-sm);
   --radius-md: var(--app-radius-md);
   --radius-lg: var(--app-radius-lg);
+  --radius-full: var(--app-radius-full);
 
   --shadow-sm: var(--app-shadow-sm);
   --shadow-md: var(--app-shadow-md);
