@@ -1,12 +1,21 @@
 import { useState } from "react";
-import type { Card, Grade } from "../../core/types";
+import type { Card as CardType, Grade } from "../../core/types";
+import { Card } from "../components/Card";
+import { Button, type ButtonVariant } from "../components/Button";
+
+const GRADES: { grade: Grade; label: string; variant: ButtonVariant }[] = [
+  { grade: "again", label: "Again", variant: "error" },
+  { grade: "hard", label: "Hard", variant: "secondary" },
+  { grade: "good", label: "Good", variant: "success" },
+  { grade: "easy", label: "Easy", variant: "primary" },
+];
 
 export function MeaningRecall({
   card,
   showScript,
   onGrade,
 }: {
-  card: Card;
+  card: CardType;
   showScript: boolean;
   onGrade: (g: Grade) => void;
 }) {
@@ -14,20 +23,24 @@ export function MeaningRecall({
   const prompt = showScript ? card.thai : card.romanization;
 
   return (
-    <div>
-      <p style={{ fontSize: "2rem" }}>{prompt}</p>
+    <Card className="flex flex-col items-center gap-5 text-center">
+      <p className={showScript ? "font-thai text-5xl" : "text-4xl font-display font-bold"}>
+        {prompt}
+      </p>
       {!revealed ? (
-        <button onClick={() => setRevealed(true)}>Show answer</button>
+        <Button onClick={() => setRevealed(true)}>Show answer</Button>
       ) : (
-        <div>
-          <p>{card.english}</p>
-          {(["again", "hard", "good", "easy"] as Grade[]).map((g) => (
-            <button key={g} onClick={() => onGrade(g)}>
-              {g}
-            </button>
-          ))}
+        <div className="flex w-full flex-col items-center gap-4">
+          <p className="text-2xl font-display font-bold text-on-surface">{card.english}</p>
+          <div className="grid w-full grid-cols-2 gap-2">
+            {GRADES.map(({ grade, label, variant }) => (
+              <Button key={grade} variant={variant} onClick={() => onGrade(grade)}>
+                {label}
+              </Button>
+            ))}
+          </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 }
