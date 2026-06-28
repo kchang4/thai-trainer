@@ -35,16 +35,16 @@ export function StudySession() {
       </div>
       <ProgressBar value={Math.max(0, 1)} max={queueLength + 1} label="Cards remaining" />
       {exercise === "meaning" && (
-        <MeaningRecall card={card} showScript={showScriptInPrompt} onGrade={submitGrade} />
+        <MeaningRecall key={card.id} card={card} showScript={showScriptInPrompt} onGrade={submitGrade} />
       )}
       {exercise === "listening" && (
-        <Listening card={card} showScript={showScriptInPrompt} onGrade={submitGrade} />
+        <Listening key={card.id} card={card} showScript={showScriptInPrompt} onGrade={submitGrade} />
       )}
       {exercise === "production" && (
-        <Production card={card} requireScript={requireScriptAnswer} onGrade={submitGrade} />
+        <Production key={card.id} card={card} requireScript={requireScriptAnswer} onGrade={submitGrade} />
       )}
       {exercise === "spelling" && (
-        <Spelling card={card} requireScript={requireScriptAnswer} onGrade={submitGrade} />
+        <Spelling key={card.id} card={card} requireScript={requireScriptAnswer} onGrade={submitGrade} />
       )}
     </section>
   );

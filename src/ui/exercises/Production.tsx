@@ -20,13 +20,7 @@ export function Production({
   const expected = requireScript ? card.thai : card.romanization;
 
   function check() {
-    if (gradeTypedAnswer(expected, value)) {
-      setResult("correct");
-      onGrade("good");
-    } else {
-      setResult("wrong");
-      onGrade("again");
-    }
+    setResult(gradeTypedAnswer(expected, value) ? "correct" : "wrong");
   }
 
   return (
@@ -43,9 +37,9 @@ export function Production({
       {result === null ? (
         <Button onClick={check}>Check</Button>
       ) : result === "correct" ? (
-        <Feedback kind="correct" message="Correct!" onContinue={() => {}} />
+        <Feedback kind="correct" message="Correct!" onContinue={() => onGrade("good")} />
       ) : (
-        <Feedback kind="wrong" message={`Answer: ${expected}`} onContinue={() => {}} />
+        <Feedback kind="wrong" message={`Answer: ${expected}`} onContinue={() => onGrade("again")} />
       )}
     </Card>
   );
