@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
-import type { Card, Grade } from "../../core/types";
+import type { Card as CardType, Grade } from "../../core/types";
 import { speakThai } from "../../tts/speak";
+import { Card } from "../components/Card";
+import { Button, type ButtonVariant } from "../components/Button";
+import { IconButton } from "../components/IconButton";
+
+const GRADES: { grade: Grade; label: string; variant: ButtonVariant }[] = [
+  { grade: "again", label: "Again", variant: "error" },
+  { grade: "hard", label: "Hard", variant: "secondary" },
+  { grade: "good", label: "Good", variant: "success" },
+  { grade: "easy", label: "Easy", variant: "primary" },
+];
 
 export function Listening({
   card,
   showScript,
   onGrade,
 }: {
-  card: Card;
+  card: CardType;
   showScript: boolean;
   onGrade: (g: Grade) => void;
 }) {
@@ -18,22 +28,26 @@ export function Listening({
   }, [card.thai]);
 
   return (
-    <div>
-      <button onClick={() => speakThai(card.thai)}>🔊 Play again</button>
+    <Card className="flex flex-col items-center gap-5 text-center">
+      <IconButton label="Play again" onClick={() => speakThai(card.thai)}>
+        🔊
+      </IconButton>
       {!revealed ? (
-        <button onClick={() => setRevealed(true)}>Show answer</button>
+        <Button onClick={() => setRevealed(true)}>Show answer</Button>
       ) : (
-        <div>
-          {showScript && <p style={{ fontSize: "2rem" }}>{card.thai}</p>}
-          <p>{card.romanization}</p>
-          <p>{card.english}</p>
-          {(["again", "hard", "good", "easy"] as Grade[]).map((g) => (
-            <button key={g} onClick={() => onGrade(g)}>
-              {g}
-            </button>
-          ))}
+        <div className="flex w-full flex-col items-center gap-3">
+          {showScript && <p className="font-thai text-4xl">{card.thai}</p>}
+          <p className="text-xl font-display font-bold">{card.romanization}</p>
+          <p className="text-on-surface-muted">{card.english}</p>
+          <div className="grid w-full grid-cols-2 gap-2">
+            {GRADES.map(({ grade, label, variant }) => (
+              <Button key={grade} variant={variant} onClick={() => onGrade(grade)}>
+                {label}
+              </Button>
+            ))}
+          </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 }
