@@ -1,0 +1,48 @@
+@import "tailwindcss";
+@import "./themes/temple.css";
+
+/* Map themeable tokens to Tailwind utilities. `inline` keeps the var
+   reference in generated CSS so [data-theme] overrides take effect. */
+@theme inline {
+  --color-primary: var(--app-primary);
+  --color-on-primary: var(--app-on-primary);
+  --color-secondary: var(--app-secondary);
+  --color-on-secondary: var(--app-on-secondary);
+  --color-bg: var(--app-bg);
+  --color-surface: var(--app-surface);
+  --color-surface-raised: var(--app-surface-raised);
+  --color-on-surface: var(--app-on-surface);
+  --color-on-surface-muted: var(--app-on-surface-muted);
+  --color-success: var(--app-success);
+  --color-on-success: var(--app-on-success);
+  --color-error: var(--app-error);
+  --color-on-error: var(--app-on-error);
+  --color-accent-teal: var(--app-accent-teal);
+  --color-border: var(--app-border);
+  --color-focus-ring: var(--app-focus-ring);
+
+  --radius-sm: var(--app-radius-sm);
+  --radius-md: var(--app-radius-md);
+  --radius-lg: var(--app-radius-lg);
+
+  --shadow-sm: var(--app-shadow-sm);
+  --shadow-md: var(--app-shadow-md);
+  --shadow-button: var(--app-shadow-button);
+
+  --font-display: var(--app-font-display);
+  --font-body: var(--app-font-body);
+  --font-thai: var(--app-font-thai);
+}
+
+html {
+  background-color: var(--color-bg);
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
